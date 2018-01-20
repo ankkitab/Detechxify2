@@ -29,6 +29,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextView info;
     private LoginButton loginButton;
     private CallbackManager callbackManager;
+    private boolean fblogin = false;
 
 
     @Bind(R.id.input_email) EditText _emailText;
@@ -72,6 +73,8 @@ public class LoginActivity extends AppCompatActivity {
                 info.setText(
                         "Successfully logged in !"
                 );
+                fblogin=true;
+                login();
             }
 
             @Override
@@ -91,7 +94,7 @@ public class LoginActivity extends AppCompatActivity {
     public void login() {
         Log.d(TAG, "Login");
 
-        if (!validate()) {
+        if (!fblogin && !validate()) {
             onLoginFailed();
             return;
         }
@@ -104,8 +107,10 @@ public class LoginActivity extends AppCompatActivity {
         progressDialog.setMessage("Authenticating...");
         progressDialog.show();
 
-        String email = _emailText.getText().toString();
-        String password = _passwordText.getText().toString();
+        if (!fblogin) {
+            String email = _emailText.getText().toString();
+            String password = _passwordText.getText().toString();
+        }
 
         // TODO: Implement your own authentication logic here.
 

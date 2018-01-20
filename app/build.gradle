@@ -5,7 +5,7 @@ android {
     buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "com.example.ankkitabose.detechxify2"
-        minSdkVersion 15
+        minSdkVersion 21
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -34,4 +34,5 @@ dependencies {
     //compile files('libs/MPAndroidChart-3.0.3.jar')
     //compile files('libs/MPAndroidChart-master.jar')
     compile 'com.github.PhilJay:MPAndroidChart:v3.0.3'
+    compile 'com.google.android.gms:play-services-appindexing:8.4.0'
 }

@@ -4,5 +4,6 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background_color"
     tools:context="com.example.ankkitabose.detechxify2.AppUsageStatisticsActivity"
     tools:ignore="MergeRootFrame" />

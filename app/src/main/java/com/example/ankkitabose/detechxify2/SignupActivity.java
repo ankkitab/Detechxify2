@@ -16,6 +16,8 @@ import butterknife.Bind;
 
 public class SignupActivity extends AppCompatActivity {
     private static final String TAG = "SignupActivity";
+    boolean flag = false;
+    DatabaseHandler db;
 
     @Bind(R.id.input_name) EditText _nameText;
     @Bind(R.id.input_email) EditText _emailText;
@@ -30,6 +32,7 @@ public class SignupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
         ButterKnife.bind(this);
+        db = new DatabaseHandler(this);
 
         _signupButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,14 +76,18 @@ public class SignupActivity extends AppCompatActivity {
         String reEnterPassword = _reEnterPasswordText.getText().toString();
 
         // TODO: Implement your own signup logic here.
-
+        if(password.equals(reEnterPassword)) {
+            flag = db.insertUser(name, password, email);
+        }
         new android.os.Handler().postDelayed(
                 new Runnable() {
                     public void run() {
                         // On complete call either onSignupSuccess or onSignupFailed
                         // depending on success
-                        onSignupSuccess();
-                        // onSignupFailed();
+                        if(flag)
+                            onSignupSuccess();
+                        else
+                            onSignupFailed();
                         progressDialog.dismiss();
                     }
                 }, 3000);

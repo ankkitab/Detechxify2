@@ -1,6 +1,7 @@
 package com.example.ankkitabose.detechxify2;
 
 import android.app.ProgressDialog;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -30,7 +31,7 @@ public class LoginActivity extends AppCompatActivity {
     private LoginButton loginButton;
     private CallbackManager callbackManager;
     private boolean fblogin = false;
-
+    DatabaseHandler db;
 
     @Bind(R.id.input_email) EditText _emailText;
     @Bind(R.id.input_password) EditText _passwordText;
@@ -45,11 +46,21 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
 
+        db = new DatabaseHandler(this);
+
         _loginButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                login();
+                String email = _emailText.getText().toString();
+                String password = _passwordText.getText().toString();
+
+                Cursor c = db.getUser(email);
+                c.moveToFirst();
+                if(c.getCount()>0 && c.getString(1).equals(password))
+                    login();
+                else
+                    onLoginFailed();
             }
         });
 
@@ -161,13 +172,13 @@ public class LoginActivity extends AppCompatActivity {
 
         String email = _emailText.getText().toString();
         String password = _passwordText.getText().toString();
-
+/*
         if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             _emailText.setError("enter a valid email address");
             valid = false;
         } else {
             _emailText.setError(null);
-        }
+        }*/
 
         if (password.isEmpty() || password.length() < 4 || password.length() > 10) {
             _passwordText.setError("between 4 and 10 alphanumeric characters");

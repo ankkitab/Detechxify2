@@ -37,7 +37,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         // TODO Auto-generated method stub
         db.execSQL(
                 "create table " + TABLE_USER +
-                        "(" + USERNAME + " integer primary key, " + PASSWORD + " text, " + EMAIL + " text);"
+                        "(" + USERNAME + " text primary key, " + PASSWORD + " text, " + EMAIL + " text);"
         );
 
         db.execSQL(
@@ -70,7 +70,12 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     public Cursor getUser(String username) {
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("select * from " + TABLE_USER + " where " + USERNAME + "=" + username + ";", null);
+        return db.rawQuery("select * from " + TABLE_USER + " where " + USERNAME + "=\"" + username + "\";", null);
+    }
+
+    public Cursor getUserByEmail(String email) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("select * from " + TABLE_USER + " where " + EMAIL + "=\"" + email + "\";", null);
     }
     /*
         public int numberOfRows() {
@@ -111,7 +116,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     public Cursor getAppData(String name) {
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("select * from " + TABLE_APPS + " where " + APP_NAME + "=" + name + ";", null);
+        return db.rawQuery("select * from " + TABLE_APPS + " where " + APP_NAME + "=\"" + name + "\";", null);
     }
 
     public int size() {

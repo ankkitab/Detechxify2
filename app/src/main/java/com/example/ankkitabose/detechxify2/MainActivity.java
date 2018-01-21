@@ -1,6 +1,10 @@
 package com.example.ankkitabose.detechxify2;
 
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -8,6 +12,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.Description;
@@ -20,6 +26,10 @@ import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import butterknife.Bind;
 
@@ -28,54 +38,125 @@ import butterknife.Bind;
 
 public class MainActivity extends ActionBarActivity {
 
-    private Button pledgeButton;
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
     private GoogleApiClient client;
+    private Button pledgeButton;
+    private  Button progress;
+    ImageView done, active ;
+    TextView result; //displays nothing when the DB is empty, timer when pledge
+    DatabaseHandler db;
+    Map<String, Integer> pkgMap;
+    Map<Integer, Integer> durMap;
+    Map<Integer, Long> timeMap;
+
+    UsageStatsManager mUsageStatsManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        db=new DatabaseHandler(this);
+        //boolean flag=true;
+
+        Intent intent = new Intent(this,LoginActivity.class);
+        startActivity(intent);
 
         pledgeButton = (Button) findViewById(R.id.btnPledge);
-        ArrayList<BarEntry> entries = new ArrayList<>();
-        entries.add(new BarEntry(4f, 0));
-        entries.add(new BarEntry(8f, 1));
-        entries.add(new BarEntry(6f, 2));
-        entries.add(new BarEntry(12f, 3));
-        entries.add(new BarEntry(18f, 4));
-        entries.add(new BarEntry(9f, 5));
-        BarDataSet dataset = new BarDataSet(entries, "# of Calls");
-
-        ArrayList<String> labels = new ArrayList<String>();
-        labels.add("January");
-        labels.add("February");
-        labels.add("March");
-        labels.add("April");
-        labels.add("May");
-        labels.add("June");
+        result = (TextView) findViewById(R.id.result);
+        progress = (Button) findViewById(R.id.progress);
+        done =(ImageView) findViewById(R.id.imageView3);
+        active =(ImageView) findViewById(R.id.imageView4);
 
 
-        //BarChart chart = new BarChart(getApplicationContext());
-        BarChart chart = (BarChart) findViewById(R.id.chart);
-        //setContentView(chart);
-        BarData data = new BarData(dataset);
-        chart.setData(data);
 
-        Description des = new Description();
-        des.setText("# of times Alice called Bob");
-        chart.setDescription(des);
+        //done.setVisibility(View.INVISIBLE);
+        //result.setVisibility(View.INVISIBLE);
+        //set that other msg also as invisible
+        if (db.size()==0) {
+            result.setText("NO PLEDGES YET");
+        }
+      //  else if () //timer is one
+        else {
+
+            pledgeButton.setText("Progress!");
+        }
+
+
+
+        /* Finding the facebook share button
+        ShareButton shareButton = (ShareButton)findViewById(R.id.imageButton2);
+        // Sharing the content to facebook
+        ShareLinkContent content = new ShareLinkContent.Builder()
+                // Setting the title that will be shared
+                .setContentTitle("Pledged to use my phone less")
+                // Setting the image that will be shared
+                .setImageUrl(Uri.parse("http://www.livetothebeat.com/images/pledge.png"))
+                .build();
+        shareButton.setShareContent(content);*/
 
         pledgeButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
                 // Start the Signup activity
-                Intent intent = new Intent(v.getContext(), AppUsageStatisticsActivity.class);
-                startActivity(intent);
+                if(!((pledgeButton.getText().toString())=="Progress!")) {
+                    Intent intent = new Intent(v.getContext(), AppUsageStatisticsActivity.class);
+                    startActivity(intent);
+                }
+                else {
+                    pledgeButton.setText("TAKE A PLEDGE");
+                    boolean flag = true;
+                    Cursor cur = db.getAllApps();
+                    cur.moveToFirst();
+                    if(cur.getCount()>0) {
+                        pkgMap = new HashMap<>();
+                        durMap = new HashMap<>();
+                        timeMap = new HashMap<>();
+                    }
+                    int i=0;
+                    while(!cur.isAfterLast()) {
+                        pkgMap.put(cur.getString(0),i);
+                        durMap.put(i,cur.getInt(1));
+                        timeMap.put(i,cur.getLong(2));
+                    }
+                    long totTime=0;
+                    Calendar cal = Calendar.getInstance();
+                    List<UsageStats> queryUsageStats;
+                    mUsageStatsManager = (UsageStatsManager) getApplicationContext().getSystemService(Context.USAGE_STATS_SERVICE);
+                    if((timeMap.get(0)+(durMap.get(0)*60*60*1000))<System.currentTimeMillis()) {
+                        //cal.add(Calendar.HOUR_OF_DAY, -durMap.get(0));
+
+                        queryUsageStats = mUsageStatsManager
+                                .queryUsageStats(0, timeMap.get(0),
+                                        ((timeMap.get(0) + (durMap.get(0) * 60 * 60 * 1000))));
+
+
+                    }
+
+                    else {
+                        flag=false;
+                        queryUsageStats = mUsageStatsManager
+                                .queryUsageStats(0, timeMap.get(0),
+                                        System.currentTimeMillis());
+                    }
+
+                    for(UsageStats us: queryUsageStats) {
+                        if(us.getPackageName().equals(pkgMap.get(0))) {
+                            totTime+=us.getTotalTimeInForeground();
+                        }
+                    }
+                    if(flag==true) {
+                        result.setText("Total Usage : "+totTime/(1000*60*60)+"/"+durMap.get(0)+"hours");
+                        done.setVisibility(View.VISIBLE);
+                        active.setVisibility(View.INVISIBLE);
+                        pledgeButton.setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        result.setText("Usage till now : "+totTime/(1000*60*60)+"/"+durMap.get(0)+"hours");
+                        done.setVisibility(View.INVISIBLE);
+                        active.setVisibility(View.VISIBLE);
+                        pledgeButton.setVisibility(View.INVISIBLE);
+                    }
+                }
 
                 // overridePendingTransition(R.anim.push_left_in, R.anim.push_left_out);
             }
@@ -84,8 +165,7 @@ public class MainActivity extends ActionBarActivity {
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
-        Intent intent = new Intent(this,LoginActivity.class);
-        startActivity(intent);
+
     }
 
     @Override
@@ -109,6 +189,7 @@ public class MainActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -145,4 +226,7 @@ public class MainActivity extends ActionBarActivity {
         AppIndex.AppIndexApi.end(client, getIndexApiAction());
         client.disconnect();
     }
+
+
+
 }

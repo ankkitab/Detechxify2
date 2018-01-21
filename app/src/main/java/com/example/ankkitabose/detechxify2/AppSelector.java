@@ -13,7 +13,9 @@ import android.widget.SpinnerAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AppSelector extends AppCompatActivity {
 
@@ -22,6 +24,7 @@ public class AppSelector extends AppCompatActivity {
     Button add;
     List<String> selectedList;
     DatabaseHandler db;
+    Map<String,String> map;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +32,7 @@ public class AppSelector extends AppCompatActivity {
         setContentView(R.layout.activity_app_selector);
 
         selectedList = new ArrayList<>();
-
+        map = new HashMap<>();
         Intent intent = getIntent();
         String[] list = intent.getStringArrayExtra("appList");
         /*for(String str:list)
@@ -56,6 +59,7 @@ public class AppSelector extends AppCompatActivity {
             int i=0;
             for(String pkg:finalPackages) {
                 drops[i]=manager.getApplicationLabel(manager.getApplicationInfo(pkg,0)).toString();
+                map.put(drops[i],pkg);
                 i++;
             }
 
@@ -75,7 +79,7 @@ public class AppSelector extends AppCompatActivity {
         add.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 selectedList.add(dropdown.getSelectedItem().toString());
-                db.insertApp(dropdown.getSelectedItem().toString(), Integer.parseInt(duration.getSelectedItem().toString().split(" ")[0]), System.currentTimeMillis());
+                db.insertApp(map.get(dropdown.getSelectedItem().toString()), Integer.parseInt(duration.getSelectedItem().toString().split(" ")[0]), System.currentTimeMillis());
                 System.out.println(db.size());
             }
         });

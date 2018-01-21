@@ -119,6 +119,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return db.rawQuery("select * from " + TABLE_APPS + " where " + APP_NAME + "=\"" + name + "\";", null);
     }
 
+    public Cursor getAllApps() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("select * from " + TABLE_APPS +";", null);
+    }
+
     public int size() {
         SQLiteDatabase db = this.getReadableDatabase();
         return (int) DatabaseUtils.queryNumEntries(db, TABLE_APPS);

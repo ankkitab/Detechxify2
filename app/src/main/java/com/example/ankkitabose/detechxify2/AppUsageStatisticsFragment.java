@@ -39,6 +39,7 @@ public class AppUsageStatisticsFragment extends Fragment {
     RecyclerView.LayoutManager mLayoutManager;
     Button mOpenUsageSettingButton;
     Spinner mSpinner;
+    List<UsageStats> stats;
 
     /**
      * Use this factory method to create a new instance of
@@ -72,7 +73,7 @@ public class AppUsageStatisticsFragment extends Fragment {
     @Override
     public void onViewCreated(View rootView, Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
-
+        Button customize = (Button) rootView.findViewById(R.id.customize);
         mUsageListAdapter = new UsageListAdapter();
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerview_app_usage);
         mLayoutManager = mRecyclerView.getLayoutManager();
@@ -95,12 +96,35 @@ public class AppUsageStatisticsFragment extends Fragment {
                     List<UsageStats> usageStatsList =
                             getUsageStatistics(statsUsageInterval.mInterval);
                     Collections.sort(usageStatsList, new LastTimeLaunchedComparatorDesc());
+                    stats = new ArrayList<>();
+                    stats.addAll(usageStatsList);
+
                     updateAppsList(usageStatsList);
                 }
+
+
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+        PackageManager pkg = getContext().getPackageManager();
+        customize.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent gotoCustomize = new Intent(v.getContext(), AppSelector.class);
+
+                //List<String> packages = new ArrayList<>();
+                String[] list = new String[stats.size()];
+                int i=0;
+                for(UsageStats stat:stats) {
+                    list[i] = stat.getPackageName();
+                    i++;
+                }
+
+                //list = packages.toArray();
+                gotoCustomize.putExtra("appList", list);
+                startActivity(gotoCustomize);
             }
         });
     }
